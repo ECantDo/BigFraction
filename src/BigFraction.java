@@ -19,15 +19,7 @@ public class BigFraction {
         this(0, 1);
     }
 
-//    public BigFraction(int numerator, int denominator) {
-//        this(numerator, denominator, false);
-//    }
-
     public BigFraction(int numerator, int denominator) {
-        if (denominator == 0) {
-            throw new IllegalArgumentException("The denominator cannot be 0");
-        }
-
         this.numerator = numerator;
         this.denominator = denominator;
 
@@ -36,6 +28,31 @@ public class BigFraction {
 
     public BigFraction(BigFraction fraction) {
         this(fraction.numerator, fraction.denominator);
+    }
+
+    public BigFraction(double value) {
+        // NaN
+        if (Double.isNaN(value)) {
+            this.numerator = 0;
+            this.denominator = 0;
+            return;
+        }
+
+        // INF
+        if (Double.isInfinite(value)) {
+            this.denominator = 0;
+            if (value > 0) {
+                this.numerator = 1;
+            } else {
+                this.numerator = -1;
+            }
+        }
+
+        // Convert
+        int size = (int) Math.pow(10, Double.toString(value).length() - 1);
+        this.numerator = (int) (value * size);
+        this.denominator = size;
+        this.reduceFraction();
     }
 
     //==================================================================================================================
@@ -63,6 +80,12 @@ public class BigFraction {
         return this.multiply(fraction);
     }
 
+    /**
+     * Divides this {@link BigFraction} by an integer
+     *
+     * @param value
+     * @return
+     */
     public BigFraction divide(int value) {
         BigFraction f = new BigFraction(this);
         f.denominator *= value;
@@ -73,6 +96,12 @@ public class BigFraction {
         return this.divide(value);
     }
 
+    /**
+     * Divides {@link BigFraction}s, this one from another.
+     *
+     * @param fraction The {@link BigFraction} to divide.
+     * @return Returns the resulting fraction.
+     */
     public BigFraction divide(BigFraction fraction) {
         BigFraction f = new BigFraction(this);
         f.numerator *= fraction.denominator;
@@ -80,11 +109,26 @@ public class BigFraction {
         return f;
     }
 
+    /**
+     * Abbreviated name for the {@link #divide(BigFraction)} method.<br>
+     * Divides {@link BigFraction}s, this one from another.
+     *
+     * @param fraction The {@link BigFraction} to divide.
+     * @return Returns the resulting fraction.
+     */
     public BigFraction div(BigFraction fraction) {
         return this.divide(fraction);
     }
 
     // Harder
+
+    /**
+     * Adds two {@link BigFraction} values from each other.  Gives the result in the lowest terms.
+     * Unlike the subtract function, add does not have an abbreviated method for a shorter name.
+     *
+     * @param fraction The fraction to add.
+     * @return Returns a new {@link BigFraction} of the resulting fraction.
+     */
     public BigFraction add(BigFraction fraction) {
         BigFraction f = new BigFraction();
         f.denominator = this.denominator * fraction.denominator;
@@ -93,6 +137,12 @@ public class BigFraction {
         return f.reduce();
     }
 
+    /**
+     * Subtracts two {@link BigFraction} values from each other.  Gives the result in the lowest terms.
+     *
+     * @param fraction The fraction to subtract.
+     * @return Returns a new {@link BigFraction} of the resulting fraction.
+     */
     public BigFraction subtract(BigFraction fraction) {
         BigFraction f = new BigFraction();
         f.denominator = this.denominator * fraction.denominator;
@@ -101,18 +151,33 @@ public class BigFraction {
         return f.reduce();
     }
 
+    /**
+     * Abbreviated method name for {@link #subtract(BigFraction)}.<br>
+     * See the above method for more details -- subtracts two {@link BigFraction} values.
+     *
+     * @param fraction {@link BigFraction} to subtract.
+     * @return Returns the resulting {@link BigFraction}.
+     */
     public BigFraction sub(BigFraction fraction) {
         return this.subtract(fraction);
     }
 
-
     // Extras
-    public void inverse() {
-        int temp = this.numerator;
-        this.numerator = this.denominator;
-        this.denominator = temp;
+
+    /**
+     * Makes a new fraction with the numerator and denominator inverted.
+     *
+     * @return Returns a new {@link BigFraction} with the numerator and denominator swapped.
+     */
+    public BigFraction inverse() {
+        BigFraction f = new BigFraction(this.denominator, this.numerator);
+        return f;
     }
 
+    /**
+     * Makes the sign value of the numerator align with the overall sign of the fraction.
+     * Does not return a new fraction, just updates the current one.
+     */
     public void updateNegative() {
         int count = 0;
         if (this.numerator < 0) {
@@ -127,13 +192,28 @@ public class BigFraction {
         this.numerator = count == 1 ? -this.numerator : this.numerator;
     }
 
-    private BigFraction reduce() {
+    /**
+     * Gets the fraction in the lowest terms. Returns a new fraction.
+     *
+     * @return A new {@link BigFraction}, with the same value, in the lowest terms.
+     * For example a fraction of 10/5 would be reduced to 2/1; 4/10 would reduce to 2/5.
+     */
+    public BigFraction reduce() {
         int gcf = greatestCommonFactor(this.numerator, this.denominator);
 //        System.out.println(gcf);
         BigFraction f = new BigFraction(this);
         f.numerator /= gcf;
         f.denominator /= gcf;
         return f;
+    }
+
+    /**
+     * Gets the fraction in the lowest terms.  Updates the values, for internal class use only.
+     */
+    private void reduceFraction() {
+        int gcf = greatestCommonFactor(this.numerator, this.denominator);
+        this.numerator /= gcf;
+        this.denominator /= gcf;
     }
 
     private static int greatestCommonFactor(int a, int b) {
