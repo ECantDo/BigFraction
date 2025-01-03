@@ -90,8 +90,7 @@ public class BigFraction {
         f.denominator = this.denominator * fraction.denominator;
         f.numerator = this.numerator * fraction.denominator;
         f.numerator += this.denominator * fraction.numerator;
-        f.reduce();
-        return f;
+        return f.reduce();
     }
 
     public BigFraction subtract(BigFraction fraction) {
@@ -99,8 +98,7 @@ public class BigFraction {
         f.denominator = this.denominator * fraction.denominator;
         f.numerator = this.numerator * fraction.denominator;
         f.numerator -= this.denominator * fraction.numerator;
-        f.reduce();
-        return f;
+        return f.reduce();
     }
 
     public BigFraction sub(BigFraction fraction) {
@@ -126,14 +124,16 @@ public class BigFraction {
             count++;
         }
 
-        this.numerator = count == 1? -this.numerator : this.numerator;
+        this.numerator = count == 1 ? -this.numerator : this.numerator;
     }
 
-    private void reduce() {
+    private BigFraction reduce() {
         int gcf = greatestCommonFactor(this.numerator, this.denominator);
 //        System.out.println(gcf);
-        this.numerator /= gcf;
-        this.denominator /= gcf;
+        BigFraction f = new BigFraction(this);
+        f.numerator /= gcf;
+        f.denominator /= gcf;
+        return f;
     }
 
     private static int greatestCommonFactor(int a, int b) {
@@ -201,6 +201,24 @@ public class BigFraction {
         return prime;
     }
 
+    //==================================================================================================================
+    // Misc
+    //==================================================================================================================
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (!(other instanceof BigFraction)) {
+            return false;
+        }
+        BigFraction fraction = new BigFraction((BigFraction) other).reduce();
+        BigFraction copy = new BigFraction(this).reduce();
+
+        return copy.numerator == fraction.numerator && copy.denominator == fraction.denominator;
+    }
+
 
     //==================================================================================================================
     // Convert
@@ -211,13 +229,13 @@ public class BigFraction {
         if (this.denominator == 0) {
             return "NaN";
         }
-        this.reduce();
-        this.updateNegative();
+        BigFraction f = new BigFraction(this).reduce();
+        f.updateNegative();
         String out = "";
 //        out += this.negative ? "-" : "";
-        out += this.numerator;
-        if (this.denominator != 1) {
-            out += "/" + this.denominator;
+        out += f.numerator;
+        if (f.denominator != 1) {
+            out += "/" + f.denominator;
         }
         return out;
     }
@@ -239,18 +257,23 @@ public class BigFraction {
     }
 
     public static void main(String[] args) {
-//        System.out.println("Hello, world!");
         BigFraction f1 = new BigFraction(-5, 2);
         System.out.println(f1);
 
         BigFraction f2 = new BigFraction(7, 4);
         System.out.println(f2);
 
+        BigFraction a = f1.add(f2);
+        BigFraction s = f1.sub(f2);
+        BigFraction m = f1.mult(f2);
+        BigFraction d = f1.div(f2);
+
         System.out.println("\nRESULTS:");
-        System.out.println("+  " + f1.add(f2));
-        System.out.println("-  " + f1.sub(f2));
-        System.out.println("*  " + f1.mult(f2));
-        System.out.println("/  " + f1.div(f2));
+        System.out.println("+  " + a);
+        System.out.println("-  " + s);
+        System.out.println("*  " + m);
+        System.out.println("/  " + d);
+
     }
 
 }
