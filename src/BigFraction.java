@@ -50,6 +50,10 @@ public class BigFraction {
 
         // Convert
         int size = (int) Math.pow(10, Double.toString(value).length() - 1);
+        if (size == Integer.MAX_VALUE) {
+            throw new IndexOutOfBoundsException("Size of the fraction is out of bounds.  Number of decimals" +
+                    " with the conversion to make the fraction, exceeds the integer limit");
+        }
         this.numerator = (int) (value * size);
         this.denominator = size;
         this.reduceFraction();
@@ -229,22 +233,25 @@ public class BigFraction {
     }
 
     private static int[] primeFactorize(int number) {
+        System.out.println("Factorizing " + number);
         number = number < 0 ? -number : number;
         int prime = 2;
-        ArrayList<Integer[]> primes = new ArrayList<>();
+        ArrayList<Integer> primes = new ArrayList<>();
         int idx = 0;
         while (number > 1) {
-            double half;
-            Integer[] primeCounter = new Integer[]{0, prime};
-            primes.add(primeCounter);
+            double dividedFraction;
+            int count = 0;
             do {
-                half = number / (double) prime;
-                if (half % 1 != 0) {
+                dividedFraction = number / (double) prime;
+                if (dividedFraction % 1 != 0) {
                     break;
                 }
-                number = (int) half;
-                primeCounter[0]++;
+                count++;
+                number = (int) dividedFraction;
             } while (true);
+            if (count != 0)
+                System.out.println(number);
+            primes.add(count);
             idx++;
             // Get next prime
             if (idx < PRIMES.size()) {
@@ -255,13 +262,14 @@ public class BigFraction {
         }
         int[] primeOut = new int[primes.size()];
         idx = 0;
-        for (Integer[] i : primes) {
-            primeOut[idx++] = i[0];
+        for (int i : primes) {
+            primeOut[idx++] = i;
         }
         return primeOut;
     }
 
     private static Integer getNextPrime() {
+        System.out.print("Getting next prime (");
         // Get next prime
         int prime = PRIMES.getLast();
         boolean foundNewPrime;
@@ -277,6 +285,7 @@ public class BigFraction {
             }
         } while (!foundNewPrime);
         PRIMES.add(prime);
+        System.out.println(prime + ")");
 
         return prime;
     }
@@ -304,12 +313,17 @@ public class BigFraction {
     // Convert
     //==================================================================================================================
 
+    /**
+     * Converts the fraction to a String representation of the fraction.  Does not reduce the fraction.
+     *
+     * @return Returns a String
+     */
     @Override
     public String toString() {
         if (this.denominator == 0) {
             return "NaN";
         }
-        BigFraction f = new BigFraction(this).reduce();
+        BigFraction f = new BigFraction(this);
         f.updateNegative();
         String out = "";
 //        out += this.negative ? "-" : "";
